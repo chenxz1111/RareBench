@@ -1,4 +1,5 @@
 from llm_utils.api import Openai_api_handler, Zhipuai_api_handler
+from llm_utils.local_llm import Local_llm_handler
 import argparse
 from utils.mydataset import RareDataset
 from utils.evaluation import diagnosis_evaluate
@@ -49,6 +50,8 @@ def main():
         handler = Openai_api_handler(args.model)
     elif args.model in ["chatglm_turbo"]:
         handler = Zhipuai_api_handler(args.model)
+    elif args.model in ["chatglm3-6b", "llama2-7b", "llama2-13b", "llama2-70b"]:
+        handler = Local_llm_handler(args.model)
 
     dataset = RareDataset(args.dataset_name, args.dataset_path, args.dataset_type)
 

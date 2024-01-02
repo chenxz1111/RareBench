@@ -1,4 +1,4 @@
-from llm_utils.api import Openai_api_handler
+from llm_utils.api import Openai_api_handler, Zhipuai_api_handler
 
 def diagnosis_evaluate(predict_diagnosis, golden_diagnosis):
     system_prompt = "You are an expert in the field of rare disease."
@@ -6,6 +6,7 @@ def diagnosis_evaluate(predict_diagnosis, golden_diagnosis):
     prompt += f'预测诊断：{predict_diagnosis}'
     prompt += f'标准诊断：{golden_diagnosis}'
     handler = Openai_api_handler("gpt4")
+    # handler = Zhipuai_api_handler("chatglm_turbo")
     print("Begin evaluation.....")
     rank = handler.get_completion(system_prompt, prompt)
     return rank
