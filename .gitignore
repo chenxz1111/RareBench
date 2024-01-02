@@ -1,3 +1,10 @@
+# mine
+llm_utils/gpt_key.txt
+llm_utils/glm_key.txt
+datasets/*
+results/*
+
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
