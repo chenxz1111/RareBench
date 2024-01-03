@@ -17,14 +17,22 @@ def diagnosis_metric_calculate(folder):
         res = json.load(open(file, "r", encoding="utf-8-sig"))
         
         predict_rank = res["predict_rank"]
+
+        if predict_rank is None:
+            predict_rank = diagnosis_evaluate(res["predict_diagnosis"], res["golden_diagnosis"])
+            res["predict_rank"] = predict_rank
+            json.dump(res, open(file, "w", encoding="utf-8-sig"), indent=4, ensure_ascii=False)
+
         if predict_rank == "否":
             recall_top_k.append(11)
         else:
             recall_top_k.append(int(predict_rank))
+        print(file)
     metric['recall_top_1'] = len([i for i in recall_top_k if i <= 1]) / len(recall_top_k)
     metric['recall_top_3'] = len([i for i in recall_top_k if i <= 3]) / len(recall_top_k)
     metric['recall_top_10'] = len([i for i in recall_top_k if i <= 10]) / len(recall_top_k)
     metric['medain_rank'] = np.median(recall_top_k)
+    print(folder)
     print(metric)
         
 
@@ -44,7 +52,8 @@ def run_task(task_type, dataset:RareDataset, handler, results_folder):
             golden_diagnosis = patient[1]
             system_prompt, prompt = rare_prompt.diagnosis_prompt(patient_info_type, patient_info)
             predict_diagnosis = handler.get_completion(system_prompt, prompt)
-            predict_rank = diagnosis_evaluate(predict_diagnosis, golden_diagnosis)
+            # predict_rank = diagnosis_evaluate(predict_diagnosis, golden_diagnosis)
+            predict_rank = None
             res = {
                 "patient_info": patient_info,
                 "golden_diagnosis": golden_diagnosis,
@@ -52,6 +61,7 @@ def run_task(task_type, dataset:RareDataset, handler, results_folder):
                 "predict_rank": predict_rank
             }
             json.dump(res, open(result_file, "w", encoding="utf-8-sig"), indent=4, ensure_ascii=False)
+            print(f"patient {i} finished")
         
         diagnosis_metric_calculate(results_folder)
 
