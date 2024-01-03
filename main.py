@@ -6,6 +6,27 @@ from utils.evaluation import diagnosis_evaluate
 import os
 from prompt import RarePrompt
 import json
+import numpy as np
+
+
+def diagnosis_metric_calculate(folder):
+    metric = {}
+    recall_top_k = []
+    for file in os.listdir(folder):
+        file = os.path.join(folder, file)
+        res = json.load(open(file, "r"), encoding="utf-8-sig")
+        
+        predict_rank = res["predict_rank"]
+        if predict_rank == "否":
+            recall_top_k.append(11)
+        else:
+            recall_top_k.append(int(predict_rank))
+    metric['recall_top_1'] = len([i for i in recall_top_k if i <= 1]) / len(recall_top_k)
+    metric['recall_top_3'] = len([i for i in recall_top_k if i <= 3]) / len(recall_top_k)
+    metric['recall_top_10'] = len([i for i in recall_top_k if i <= 10]) / len(recall_top_k)
+    metric['medain_rank'] = np.median(recall_top_k)
+    print(metric)
+        
 
 
 def run_task(task_type, dataset:RareDataset, handler, results_folder):
@@ -30,8 +51,9 @@ def run_task(task_type, dataset:RareDataset, handler, results_folder):
                 "predict_diagnosis": predict_diagnosis,
                 "predict_rank": predict_rank
             }
-            with open(result_file, "w", encoding="utf-8-sig") as f:
-                json.dump(res, f, indent=4, ensure_ascii=False)
+            json.dump(res, open(result_file, "w", encoding="utf-8-sig"), indent=4, ensure_ascii=False)
+        
+        diagnosis_metric_calculate(results_folder)
 
 
 def main():

@@ -2,6 +2,7 @@ from transformers import AutoTokenizer, AutoModel, LlamaForCausalLM
 import json
 import time
 import torch
+# from torch.nn import DataParallel
 
 class Local_llm_handler:
     def __init__(self, model_name):
@@ -18,6 +19,10 @@ class Local_llm_handler:
             self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
             print(f"Using device: {self.device}")
             self.model.to(self.device)
+            # print(torch.cuda.device_count())
+            # if torch.cuda.device_count() > 1:
+            #     print(f"Let's use {torch.cuda.device_count()} GPUs!")
+            #     self.model = DataParallel(self.model)
         
         self.model.eval()
 
