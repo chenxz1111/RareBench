@@ -18,8 +18,8 @@ class RareDataset():
             phenotype_list = p[0]
             disease_list = p[1]
             if self.dataset_type == "PHENOTYPE":
-                phenotype_list = [phenotype_mapping[phenotype] for phenotype in phenotype_list]
-                disease_list = [disease_mapping[disease] for disease in disease_list]
+                phenotype_list = [phenotype_mapping[phenotype] for phenotype in phenotype_list if phenotype in phenotype_mapping]
+                disease_list = [disease_mapping[disease] for disease in disease_list if disease in disease_mapping]
             phenotype = ",".join(phenotype_list)
             disease = ",".join(disease_list)
             patient.append((phenotype, disease))

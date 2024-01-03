@@ -14,7 +14,7 @@ def diagnosis_metric_calculate(folder):
     recall_top_k = []
     for file in os.listdir(folder):
         file = os.path.join(folder, file)
-        res = json.load(open(file, "r"), encoding="utf-8-sig")
+        res = json.load(open(file, "r", encoding="utf-8-sig"))
         
         predict_rank = res["predict_rank"]
         if predict_rank == "否":
@@ -59,10 +59,10 @@ def run_task(task_type, dataset:RareDataset, handler, results_folder):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--task_type', type=str, default="diagnosis", choices=["diagnosis"])
-    parser.add_argument('--dataset_name', type=str, default="PUMCH_ADM")
+    parser.add_argument('--dataset_name', type=str, default="PUMCH_MDT")
     parser.add_argument('--dataset_type', type=str, default="PHENOTYPE", choices=["EHR", "PHENOTYPE"])
-    # parser.add_argument('--dataset_path', default='./datasets/PUMCH/test.json')
-    parser.add_argument('--dataset_path', default='./test.json')
+    parser.add_argument('--dataset_path', default='./datasets/PUMCH/PUMCH_MDT.json')
+    # parser.add_argument('--dataset_path', default='./test.json')
     parser.add_argument('--results_folder', default='./results/PUMCH')
     parser.add_argument('--model', type=str, default="gpt4", choices=["gpt4", "chatgpt", "chatglm_turbo", "chatglm3-6b", "llama2-7b", "llama2-13b", "llama2-70b"])
 
