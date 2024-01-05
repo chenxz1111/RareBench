@@ -11,7 +11,7 @@ class RarePrompt:
 
     def diagnosis_prompt(self, patient_info_type, patient_info: str, few_shot: Optional[List[Tuple[str, str]]] = None) -> Tuple[str, str]:
         # patient_info_type = "EHR" or "PHENOTYPE"
-        if patient_info_type == "EHR":
+        if patient_info_type == "EHR" or patient_info_type == "MDT":
             info_type = "electronic medical record"
         elif patient_info_type == "PHENOTYPE":
             info_type = "phenotype"

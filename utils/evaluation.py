@@ -11,6 +11,7 @@ def diagnosis_evaluate(predict_diagnosis, golden_diagnosis):
     prompt += f'预测诊断：{predict_diagnosis}'
     prompt += f'标准诊断：{golden_diagnosis}'
     handler = Openai_api_handler("gpt4")
+    # handler = Openai_api_handler("chatgpt")
     # handler = Zhipuai_api_handler("chatglm_turbo")
     print("Begin evaluation.....")
     rank = handler.get_completion(system_prompt, prompt)

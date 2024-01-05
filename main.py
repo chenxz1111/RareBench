@@ -23,11 +23,12 @@ def diagnosis_metric_calculate(folder):
             res["predict_rank"] = predict_rank
             json.dump(res, open(file, "w", encoding="utf-8-sig"), indent=4, ensure_ascii=False)
 
-        if predict_rank == "否":
+        if "否" in predict_rank:
             recall_top_k.append(11)
         else:
+            print(file)
             recall_top_k.append(int(predict_rank))
-        print(file)
+        
     metric['recall_top_1'] = len([i for i in recall_top_k if i <= 1]) / len(recall_top_k)
     metric['recall_top_3'] = len([i for i in recall_top_k if i <= 3]) / len(recall_top_k)
     metric['recall_top_10'] = len([i for i in recall_top_k if i <= 10]) / len(recall_top_k)
@@ -45,6 +46,8 @@ def run_task(task_type, dataset:RareDataset, handler, results_folder):
         print("Begin diagnosis.....")
         print("total patient: ", len(dataset.patient))
         for i, patient in enumerate(dataset.patient):
+            if handler is None:
+                break
             result_file = os.path.join(results_folder, f"patient_{i}.json")
             if os.path.exists(result_file):
                 continue
@@ -64,13 +67,16 @@ def run_task(task_type, dataset:RareDataset, handler, results_folder):
             print(f"patient {i} finished")
         
         diagnosis_metric_calculate(results_folder)
+    elif task_type == "mdt":
+        pass
+        
 
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--task_type', type=str, default="diagnosis", choices=["diagnosis"])
+    parser.add_argument('--task_type', type=str, default="diagnosis", choices=["diagnosis", "mdt"])
     parser.add_argument('--dataset_name', type=str, default="PUMCH_MDT")
-    parser.add_argument('--dataset_type', type=str, default="PHENOTYPE", choices=["EHR", "PHENOTYPE"])
+    parser.add_argument('--dataset_type', type=str, default="PHENOTYPE", choices=["EHR", "PHENOTYPE", "MDT"])
     parser.add_argument('--dataset_path', default='./datasets/PUMCH/PUMCH_MDT.json')
     # parser.add_argument('--dataset_path', default='./test.json')
     parser.add_argument('--results_folder', default='./results/PUMCH')
@@ -78,12 +84,15 @@ def main():
 
     args = parser.parse_args()
 
-    if args.model in ["gpt4", "chatgpt"]:
-        handler = Openai_api_handler(args.model)
-    elif args.model in ["chatglm_turbo"]:
-        handler = Zhipuai_api_handler(args.model)
-    elif args.model in ["chatglm3-6b", "llama2-7b", "llama2-13b", "llama2-70b"]:
-        handler = Local_llm_handler(args.model)
+    try:
+        if args.model in ["gpt4", "chatgpt"]:
+            handler = Openai_api_handler(args.model)
+        elif args.model in ["chatglm_turbo"]:
+            handler = Zhipuai_api_handler(args.model)
+        elif args.model in ["chatglm3-6b", "llama2-7b", "llama2-13b", "llama2-70b"]:
+            handler = Local_llm_handler(args.model)
+    except Exception as e:
+        handler = None
 
     dataset = RareDataset(args.dataset_name, args.dataset_path, args.dataset_type)
 

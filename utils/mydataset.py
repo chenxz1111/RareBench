@@ -5,9 +5,12 @@ class RareDataset():
         self.dataset_name = dataset_name
         self.dataset_path = dataset_path
         self.dataset_type = dataset_type
-        self.patient = self.load_data()
+        if dataset_type == "EHR" or dataset_type == "PHENOTYPE":
+            self.patient = self.load_ehr_phenotype_data()
+        elif dataset_type == "MDT":
+            self.patient = self.load_mdt_data()
 
-    def load_data(self):
+    def load_ehr_phenotype_data(self):
         phenotype_mapping = json.load(open("mapping/phenotype_mapping.json", "r", encoding="utf-8-sig"))
         disease_mapping = json.load(open("mapping/disease_mapping.json", "r", encoding="utf-8-sig"))
 
@@ -24,4 +27,16 @@ class RareDataset():
             disease = ",".join(disease_list)
             patient.append((phenotype, disease))
             
+        return patient
+    
+    def load_mdt_data(self):
+        patient = []
+        with open(self.dataset_path, "r", encoding="utf-8-sig") as f:
+            data = json.load(f)
+        for k, v in data.items():
+            ehr_info = v['二、病例介绍']
+            ehr_info = "".join(ehr_info)
+            golden_diagnosis = v['golden_diagnosis']
+            
+            patient.append((ehr_info, golden_diagnosis))
         return patient
