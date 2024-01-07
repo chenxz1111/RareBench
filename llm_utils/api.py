@@ -21,6 +21,7 @@ class Openai_api_handler:
     def get_completion(self, system_prompt, prompt, seed=42):
         try:
             t = time.time()
+            
             if self.model == "gpt-4-1106-preview" or self.model == "gpt-3.5-turbo-1106":
                 completion = openai.chat.completions.create(
                     model=self.model,

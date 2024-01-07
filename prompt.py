@@ -17,9 +17,9 @@ class RarePrompt:
             info_type = "phenotype"
         prompt = ""
         if few_shot and len(few_shot) > 0:
-            prompt += f"Let me give you {len(few_shot)} examples first::\n"
+            prompt += f"Let me give you {len(few_shot)} examples first:\n"
             for i, shot in enumerate(few_shot):
-                prompt += f"The {self.num_mapping[str(i)]} patient has a rare disease [{shot[1]}], and his/her {info_type} is as follows: [{shot[0]}].\n"
+                prompt += f"The {self.num_mapping[str(i+1)]} patient has a rare disease [{shot[1]}], and his/her {info_type} is as follows: [{shot[0]}].\n"
             prompt += "Next is the patient case you need to diagnose:"
         prompt += f"Patient's {info_type}: {patient_info}\n"
         prompt += "Enumerate the top 10 most likely diagnoses. Be precise, listing one diagnosis per line, and try to cover many unique possibilities (at least 10). The top 10 diagnoses are:"
