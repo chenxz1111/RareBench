@@ -1,4 +1,4 @@
-from llm_utils.api import Openai_api_handler, Zhipuai_api_handler
+from llm_utils.api import Openai_api_handler, Zhipuai_api_handler, Gemini_api_handler
 from llm_utils.local_llm import Local_llm_handler
 import argparse
 from utils.mydataset import RareDataset
@@ -13,7 +13,8 @@ np.random.seed(42)
 
 def diagnosis_metric_calculate(folder):
     # handler = Openai_api_handler("gpt4")
-    handler = Openai_api_handler("chatgpt")
+    # handler = Openai_api_handler("chatgpt")
+    handler = Gemini_api_handler("gemini_pro")
     # handler = Openai_api_handler("chatgpt_instruct")
     # handler = Zhipuai_api_handler("chatglm_turbo")
     CNT = 0
@@ -139,7 +140,7 @@ def run_task(task_type, dataset:RareDataset, handler, results_folder, few_shot):
             }
             json.dump(res, open(result_file, "w", encoding="utf-8-sig"), indent=4, ensure_ascii=False)
             print(f"patient {i} finished")
-            print("total tokens: ", handler.gpt4_tokens, handler.chatgpt_tokens, handler.chatgpt_instruct_tokens)
+            # print("total tokens: ", handler.gpt4_tokens, handler.chatgpt_tokens, handler.chatgpt_instruct_tokens)
         
         diagnosis_metric_calculate(results_folder)
     elif task_type == "mdt":
@@ -155,7 +156,7 @@ def main():
     parser.add_argument('--dataset_path', default='./datasets/PUMCH/PUMCH_MDT.json')
     # parser.add_argument('--dataset_path', default='./test.json')
     parser.add_argument('--results_folder', default='./results/PUMCH')
-    parser.add_argument('--model', type=str, default="gpt4", choices=["gpt4", "chatgpt", "chatglm_turbo", "chatglm3-6b", "llama2-7b", "llama2-13b", "llama2-70b"])
+    parser.add_argument('--model', type=str, default="gpt4", choices=["gpt4", "chatgpt", "chatglm_turbo", "gemini_pro", "chatglm3-6b", "llama2-7b", "llama2-13b", "llama2-70b"])
     parser.add_argument('--few_shot', type=str, default="none", choices=["none", "random", "dynamic"])
 
     args = parser.parse_args()
@@ -165,6 +166,8 @@ def main():
             handler = Openai_api_handler(args.model)
         elif args.model in ["chatglm_turbo"]:
             handler = Zhipuai_api_handler(args.model)
+        elif args.model in ["gemini_pro"]:
+            handler = Gemini_api_handler(args.model)
         elif args.model in ["chatglm3-6b", "llama2-7b", "llama2-13b", "llama2-70b"]:
             handler = Local_llm_handler(args.model)
     except Exception as e:

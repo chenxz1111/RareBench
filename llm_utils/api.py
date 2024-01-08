@@ -1,5 +1,6 @@
 import openai
 import zhipuai
+import google.generativeai as genai
 import time
 
 class Openai_api_handler:
@@ -114,6 +115,28 @@ class Zhipuai_api_handler:
                 if event.event == "add":
                     result += event.data
             print(f'ChatGLM-Turbo API time: {time.time() - t}')
+            return result
+        except Exception as e:
+            print(e)
+            return None
+        
+
+class Gemini_api_handler:
+    def __init__(self, model) -> None:
+        # Put your own key in the llm_utils/gemini_key.txt file
+        with open('llm_utils/gemini_key.txt', 'r') as f:
+            genai.configure(api_key=f.readline().strip(), transport='rest')  
+        if model == 'gemini_pro':
+            self.model_name = "gemini-pro"
+            self.model = genai.GenerativeModel('gemini-pro')
+
+    def get_completion(self, system_prompt, prompt, seed=42):
+        try:
+            t = time.time()
+            response = self.model.generate_content(system_prompt+prompt)
+            result = response.text
+            
+            print(f'Gemini API time: {time.time() - t}')
             return result
         except Exception as e:
             print(e)
