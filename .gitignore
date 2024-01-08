@@ -3,6 +3,7 @@ llm_utils/gpt_key.txt
 llm_utils/glm_key.txt
 datasets/*
 results/*
+mapping/phe2embedding.json
 
 
 # Byte-compiled / optimized / DLL files

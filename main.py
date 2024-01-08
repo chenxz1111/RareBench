@@ -29,8 +29,9 @@ def diagnosis_metric_calculate(folder):
         if predict_rank is None:
             predict_rank = diagnosis_evaluate(res["predict_diagnosis"], res["golden_diagnosis"], handler)
             res["predict_rank"] = predict_rank
+        # res["predict_rank"] = None
             json.dump(res, open(file, "w", encoding="utf-8-sig"), indent=4, ensure_ascii=False)
-
+        # continue
         if "否" in predict_rank:
             recall_top_k.append(11)
         else:
@@ -63,6 +64,39 @@ def generate_random_few_shot_id(exclude_id, total_num, k_shot=3):
             few_shot_id.append(id)
     return few_shot_id
 
+def generate_dynamic_few_shot_id(exclude_id, dataset, k_shot=3):
+    few_shot_id = []
+
+    patient = dataset.load_hpo_code_data()
+    phe2embedding = json.load(open("mapping/phe2embedding.json", "r", encoding="utf-8-sig"))
+    ic_dict = json.load(open("mapping/ic_dict.json", "r", encoding="utf-8-sig"))
+    exclude_patient = patient[exclude_id]
+    exclude_patient_embedding = np.array([np.array(phe2embedding[phe]) for phe in exclude_patient[0] if phe in phe2embedding])
+    exclude_patient_ic = np.array([ic_dict[phe] for phe in exclude_patient[0] if phe in phe2embedding])
+    exclude_patient_embedding = np.sum(exclude_patient_embedding * exclude_patient_ic.reshape(-1, 1), axis=0) / np.sum(exclude_patient_ic)
+    candidata_embedding_list = []
+    for i, p in enumerate(patient):
+        phe_embedding = np.array([np.array(phe2embedding[phe]) for phe in p[0] if phe in phe2embedding])
+        ic_coefficient_list = np.array([ic_dict[phe] for phe in p[0] if phe in phe2embedding])
+        phe_embedding = np.sum(phe_embedding * ic_coefficient_list.reshape(-1, 1), axis=0) / np.sum(ic_coefficient_list)
+        candidata_embedding_list.append(phe_embedding)
+    candidata_embedding_list = np.array(candidata_embedding_list)
+    cosine_sim = np.dot(candidata_embedding_list, exclude_patient_embedding) 
+    cosine_sim = np.argsort(cosine_sim)[::-1]
+    for i in cosine_sim:
+        if i not in few_shot_id and i != exclude_id:
+            few_shot_id.append(i)
+        if len(few_shot_id) == k_shot:
+            break
+    print(exclude_id, few_shot_id)
+    print(patient[exclude_id][1])
+    print('----------------')
+    for id in few_shot_id:
+        print(patient[id][1])
+
+    print('\n\n\n')
+    return few_shot_id
+
 
 def run_task(task_type, dataset:RareDataset, handler, results_folder, few_shot):
     rare_prompt = RarePrompt()
@@ -80,8 +114,13 @@ def run_task(task_type, dataset:RareDataset, handler, results_folder, few_shot):
             patient_info = patient[0]
             golden_diagnosis = patient[1]
             few_shot_info = []
-            if few_shot:
+            if few_shot == "random":
                 few_shot_id = generate_random_few_shot_id([i], len(dataset.patient))
+                for id in few_shot_id:
+                    few_shot_info.append((dataset.patient[id][0], dataset.patient[id][1]))
+            elif few_shot == "dynamic":
+                few_shot_id = generate_dynamic_few_shot_id(i, dataset)
+                # input()
                 for id in few_shot_id:
                     few_shot_info.append((dataset.patient[id][0], dataset.patient[id][1]))
 
@@ -102,7 +141,7 @@ def run_task(task_type, dataset:RareDataset, handler, results_folder, few_shot):
             print(f"patient {i} finished")
             print("total tokens: ", handler.gpt4_tokens, handler.chatgpt_tokens, handler.chatgpt_instruct_tokens)
         
-        # diagnosis_metric_calculate(results_folder)
+        diagnosis_metric_calculate(results_folder)
     elif task_type == "mdt":
         pass
         
@@ -117,7 +156,7 @@ def main():
     # parser.add_argument('--dataset_path', default='./test.json')
     parser.add_argument('--results_folder', default='./results/PUMCH')
     parser.add_argument('--model', type=str, default="gpt4", choices=["gpt4", "chatgpt", "chatglm_turbo", "chatglm3-6b", "llama2-7b", "llama2-13b", "llama2-70b"])
-    parser.add_argument('--few_shot', type=bool, default=False)
+    parser.add_argument('--few_shot', type=str, default="none", choices=["none", "random", "dynamic"])
 
     args = parser.parse_args()
 
@@ -132,7 +171,13 @@ def main():
         handler = None
 
     dataset = RareDataset(args.dataset_name, args.dataset_path, args.dataset_type)
-    few_shot = "_few_shot" if args.few_shot else ""
+    
+    if args.few_shot == "none":
+        few_shot = ""
+    elif args.few_shot == "random":
+        few_shot = "_few_shot"
+    elif args.few_shot == "dynamic":
+        few_shot = "_dynamic_few_shot"
     results_folder = os.path.join(args.results_folder, args.dataset_name, args.model+"_"+args.task_type+few_shot)
     run_task(args.task_type, dataset, handler, results_folder, args.few_shot)
 
