@@ -13,8 +13,8 @@ np.random.seed(42)
 
 def diagnosis_metric_calculate(folder):
     # handler = Openai_api_handler("gpt4")
-    # handler = Openai_api_handler("chatgpt")
-    handler = Gemini_api_handler("gemini_pro")
+    handler = Openai_api_handler("chatgpt")
+    # handler = Gemini_api_handler("gemini_pro")
     # handler = Openai_api_handler("chatgpt_instruct")
     # handler = Zhipuai_api_handler("chatglm_turbo")
     CNT = 0
@@ -30,8 +30,9 @@ def diagnosis_metric_calculate(folder):
         if predict_rank is None:
             predict_rank = diagnosis_evaluate(res["predict_diagnosis"], res["golden_diagnosis"], handler)
             res["predict_rank"] = predict_rank
-        # res["predict_rank"] = None
             json.dump(res, open(file, "w", encoding="utf-8-sig"), indent=4, ensure_ascii=False)
+        # res["predict_rank"] = None
+        # json.dump(res, open(file, "w", encoding="utf-8-sig"), indent=4, ensure_ascii=False)
         # continue
         if "否" in predict_rank:
             recall_top_k.append(11)
@@ -40,10 +41,10 @@ def diagnosis_metric_calculate(folder):
             pattern = r'\b(?:10|[1-9])\b'
             predict_rank = re.findall(pattern, predict_rank)
             if len(predict_rank) == 0 or len(predict_rank) > 1:
-                CNT += 1
-                res["predict_rank"] = None
-                json.dump(res, open(file, "w", encoding="utf-8-sig"), indent=4, ensure_ascii=False)
-                continue
+                # CNT += 1
+                # res["predict_rank"] = None
+                # json.dump(res, open(file, "w", encoding="utf-8-sig"), indent=4, ensure_ascii=False)
+                # continue
                 raise Exception("predict_rank error")
             predict_rank = predict_rank[0]
             recall_top_k.append(int(predict_rank))
@@ -89,13 +90,12 @@ def generate_dynamic_few_shot_id(exclude_id, dataset, k_shot=3):
             few_shot_id.append(i)
         if len(few_shot_id) == k_shot:
             break
-    print(exclude_id, few_shot_id)
-    print(patient[exclude_id][1])
-    print('----------------')
-    for id in few_shot_id:
-        print(patient[id][1])
-
-    print('\n\n\n')
+    # print(exclude_id, few_shot_id)
+    # print(patient[exclude_id][1])
+    # print('----------------')
+    # for id in few_shot_id:
+    #     print(patient[id][1])
+    # print('\n')
     return few_shot_id
 
 
@@ -106,6 +106,7 @@ def run_task(task_type, dataset:RareDataset, handler, results_folder, few_shot):
         os.makedirs(results_folder, exist_ok=True)
         print("Begin diagnosis.....")
         print("total patient: ", len(dataset.patient))
+        ERR_CNT = 0
         for i, patient in enumerate(dataset.patient):
             if handler is None:
                 break
@@ -129,8 +130,9 @@ def run_task(task_type, dataset:RareDataset, handler, results_folder, few_shot):
             predict_diagnosis = handler.get_completion(system_prompt, prompt)
             if predict_diagnosis is None:
                 print(f"patient {i} predict diagnosis is None")
+                ERR_CNT += 1
                 continue
-            # predict_rank = diagnosis_evaluate(predict_diagnosis, golden_diagnosis)
+            
             predict_rank = None
             res = {
                 "patient_info": patient_info,
@@ -140,9 +142,10 @@ def run_task(task_type, dataset:RareDataset, handler, results_folder, few_shot):
             }
             json.dump(res, open(result_file, "w", encoding="utf-8-sig"), indent=4, ensure_ascii=False)
             print(f"patient {i} finished")
-            # print("total tokens: ", handler.gpt4_tokens, handler.chatgpt_tokens, handler.chatgpt_instruct_tokens)
+            print("total tokens: ", handler.gpt4_tokens, handler.chatgpt_tokens, handler.chatgpt_instruct_tokens)
         
         diagnosis_metric_calculate(results_folder)
+        print("diagnosis ERR_CNT: ", ERR_CNT)
     elif task_type == "mdt":
         pass
         
