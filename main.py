@@ -109,6 +109,7 @@ def run_task(task_type, dataset:RareDataset, handler, results_folder, few_shot):
         ERR_CNT = 0
         for i, patient in enumerate(dataset.patient):
             if handler is None:
+                print("handler is None")
                 break
             result_file = os.path.join(results_folder, f"patient_{i}.json")
             if os.path.exists(result_file):
@@ -142,9 +143,10 @@ def run_task(task_type, dataset:RareDataset, handler, results_folder, few_shot):
             }
             json.dump(res, open(result_file, "w", encoding="utf-8-sig"), indent=4, ensure_ascii=False)
             print(f"patient {i} finished")
-            print("total tokens: ", handler.gpt4_tokens, handler.chatgpt_tokens, handler.chatgpt_instruct_tokens)
+            if type(handler) == Openai_api_handler:
+                print("total tokens: ", handler.gpt4_tokens, handler.chatgpt_tokens, handler.chatgpt_instruct_tokens)
         
-        diagnosis_metric_calculate(results_folder)
+        # diagnosis_metric_calculate(results_folder)
         print("diagnosis ERR_CNT: ", ERR_CNT)
     elif task_type == "mdt":
         pass
@@ -156,10 +158,10 @@ def main():
     parser.add_argument('--task_type', type=str, default="diagnosis", choices=["diagnosis", "mdt"])
     parser.add_argument('--dataset_name', type=str, default="PUMCH_MDT")
     parser.add_argument('--dataset_type', type=str, default="PHENOTYPE", choices=["EHR", "PHENOTYPE", "MDT"])
-    parser.add_argument('--dataset_path', default='./datasets/PUMCH/PUMCH_MDT.json')
-    # parser.add_argument('--dataset_path', default='./test.json')
+    # parser.add_argument('--dataset_path', default='./datasets/PUMCH/PUMCH_MDT.json')
+    parser.add_argument('--dataset_path', default='./test.json')
     parser.add_argument('--results_folder', default='./results/PUMCH')
-    parser.add_argument('--model', type=str, default="gpt4", choices=["gpt4", "chatgpt", "chatglm_turbo", "gemini_pro", "chatglm3-6b", "llama2-7b", "llama2-13b", "llama2-70b"])
+    parser.add_argument('--model', type=str, default="gpt4", choices=["gpt4", "chatgpt", "chatglm_turbo", "gemini_pro", "mistral-7b", "chatglm3-6b", "llama2-7b", "llama2-13b", "llama2-70b"])
     parser.add_argument('--few_shot', type=str, default="none", choices=["none", "random", "dynamic"])
 
     args = parser.parse_args()
@@ -171,7 +173,7 @@ def main():
             handler = Zhipuai_api_handler(args.model)
         elif args.model in ["gemini_pro"]:
             handler = Gemini_api_handler(args.model)
-        elif args.model in ["chatglm3-6b", "llama2-7b", "llama2-13b", "llama2-70b"]:
+        elif args.model in ["mistral-7b", "chatglm3-6b", "llama2-7b", "llama2-13b", "llama2-70b"]:
             handler = Local_llm_handler(args.model)
     except Exception as e:
         handler = None

@@ -1,4 +1,5 @@
 {
+    "mistral-7b": "/data/data2-backup/llm/Mistral-7B-Instruct-v0.1",
     "chatglm3-6b": "/data/data2-backup/llm/chatglm3-6b", 
     "llama2-7b": "/data/data2-backup/llm/llama2/llama-2-7b-chat", 
     "llama2-13b": "/data/data2-backup/llm/llama2/llama-2-13b-chat", 
