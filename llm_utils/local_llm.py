@@ -30,7 +30,7 @@ class Local_llm_handler:
                 inputs = self.tokenizer(system_prompt + prompt, return_tensors="pt")
                 inputs = inputs.to(self.device)
                 self.model.to(self.device)
-                generate_ids = self.model.generate(inputs.input_ids, max_length=512)
+                generate_ids = self.model.generate(inputs.input_ids, max_new_tokens=1000)
                 result = self.tokenizer.batch_decode(generate_ids, skip_special_tokens=True, clean_up_tokenization_spaces=False)[0]
                 result = result.replace(system_prompt + prompt, "")
             elif self.model_name in ["mistral-7b"]:
@@ -38,8 +38,8 @@ class Local_llm_handler:
                     {"role": "user", "content": system_prompt + prompt}
                 ]
                 model_inputs = self.tokenizer.apply_chat_template(messages, return_tensors="pt")
-                # model_inputs = model_inputs.to(self.device)
-                # self.model.to(self.device)
+                model_inputs = model_inputs.to(self.device)
+                self.model.to(self.device)
 
                 generated_ids = self.model.generate(model_inputs, max_new_tokens=1000, do_sample=True)
                 result = self.tokenizer.batch_decode(generated_ids, skip_special_tokens=True, clean_up_tokenization_spaces=False)[0]
