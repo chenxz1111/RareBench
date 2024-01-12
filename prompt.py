@@ -9,7 +9,7 @@ class RarePrompt:
         
         self.num_mapping = json.load(open("mapping/num.json", "r"))
 
-    def diagnosis_prompt(self, patient_info_type, patient_info: str, few_shot: Optional[List[Tuple[str, str]]] = None) -> Tuple[str, str]:
+    def diagnosis_prompt(self, patient_info_type, patient_info: str, cot: str, few_shot: Optional[List[Tuple[str, str]]] = None) -> Tuple[str, str]:
         # patient_info_type = "EHR" or "PHENOTYPE"
         if patient_info_type == "EHR" or patient_info_type == "MDT":
             info_type = "electronic medical record"
@@ -22,7 +22,13 @@ class RarePrompt:
                 prompt += f"The {self.num_mapping[str(i+1)]} patient has a rare disease [{shot[1]}], and his/her {info_type} is as follows: [{shot[0]}].\n"
             prompt += "Next is the patient case you need to diagnose:"
         prompt += f"Patient's {info_type}: {patient_info}\n"
-        prompt += "Enumerate the top 10 most likely diagnoses. Be precise, listing one diagnosis per line, and try to cover many unique possibilities (at least 10). The top 10 diagnoses are:"
+        prompt += "Enumerate the top 10 most likely diagnoses. Be precise, listing one diagnosis per line, and try to cover many unique possibilities (at least 10). "
+        if cot == "zero-shot":
+            prompt += "Let us think step by step, you must think more steps. "
+        prompt += "The top 10 diagnoses are:"
+        
+        # elif cot == "none":
+            
         return (self.diagnosis_system_prompt, prompt)
     
     
