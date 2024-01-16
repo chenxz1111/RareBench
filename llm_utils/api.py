@@ -97,8 +97,10 @@ class Zhipuai_api_handler:
         # Put your own key in the llm_utils/glm_key.txt file
         with open('llm_utils/glm_key.txt', 'r') as f:
             zhipuai.api_key = f.readline().strip()
-        if model == 'chatglm_turbo':
-            self.model = "chatglm_turbo"
+        if model == 'glm4':
+            self.model = "glm-4"
+        elif model == 'glm3_turbo':
+            self.model = "glm-3-turbo"
 
     def get_completion(self, system_prompt, prompt, seed=42):
         try:
@@ -114,7 +116,7 @@ class Zhipuai_api_handler:
             for event in response.events():
                 if event.event == "add":
                     result += event.data
-            print(f'ChatGLM-Turbo API time: {time.time() - t}')
+            print(f'{self.model} API time: {time.time() - t}')
             return result
         except Exception as e:
             print(e)
