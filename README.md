@@ -38,7 +38,7 @@ Replace the content in the mapping/local_llm_path.json file with the path to the
 
 ## 📄 Acknowledgement
 
-- Some of the tasks of LongBench are based on the datasets proposed by previous researchers, including [HotpotQA](https://hotpotqa.github.io/),.
+- Some of the dataset of RareBench are based on previous researchers, including [RAMEDIS](https://agbi.techfak.uni-bielefeld.de/ramedis/htdocs/eng/index.php), [MME](https://github.com/ga4gh/mme-apis), [LIRICAL](https://github.com/TheJacksonLaboratory/LIRICAL) [PhenoBrain](https://github.com/xiaohaomao/timgroup_disease_diagnosis).
 
 ## 📝 Citation
 ```
