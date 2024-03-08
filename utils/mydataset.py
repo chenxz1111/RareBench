@@ -15,7 +15,7 @@ class RareDataset():
         disease_mapping = json.load(open("mapping/disease_mapping.json", "r", encoding="utf-8-sig"))
 
         patient = []
-        with open(self.dataset_path, "r") as f:
+        with open(self.dataset_path, "r", encoding="utf-8-sig") as f:
             data = json.load(f)
         for p in data:
             phenotype_list = p[0]
@@ -26,6 +26,7 @@ class RareDataset():
             phenotype = ",".join(phenotype_list)
             disease = ",".join(disease_list)
             patient.append((phenotype, disease))
+            
             
         return patient
     

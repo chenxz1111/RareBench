@@ -20,10 +20,19 @@ def diagnosis_metric_calculate(folder):
     CNT = 0
     metric = {}
     recall_top_k = []
+
+    Pediatrics = range(0, 15)
+    Neurology = range(30, 45)
+    Cardiology = range(15, 30)
+    Nephrology = range(45, 60)
+    Hematology = range(60, 75)
+
+
     for file in os.listdir(folder):
+    #   if int(file.split("_")[1].split(".")[0]) in Pediatrics:
         file = os.path.join(folder, file)
         res = json.load(open(file, "r", encoding="utf-8-sig"))
-        
+    
         predict_rank = res["predict_rank"]
         if res['predict_diagnosis'] is None:
             print(file, "predict_diagnosis is None")
@@ -42,9 +51,9 @@ def diagnosis_metric_calculate(folder):
             predict_rank = re.findall(pattern, predict_rank)
             if len(predict_rank) == 0 or len(predict_rank) > 1:
                 CNT += 1
+                res["predict_rank"] = None
                 print(file)
                 input()
-                res["predict_rank"] = None
                 # json.dump(res, open(file, "w", encoding="utf-8-sig"), indent=4, ensure_ascii=False)
                 continue
                 raise Exception("predict_rank error")
@@ -160,8 +169,8 @@ def main():
     parser.add_argument('--task_type', type=str, default="diagnosis", choices=["diagnosis", "mdt"])
     parser.add_argument('--dataset_name', type=str, default="PUMCH_ADM")
     parser.add_argument('--dataset_type', type=str, default="PHENOTYPE", choices=["EHR", "PHENOTYPE", "MDT"])
-    # parser.add_argument('--dataset_path', default='./datasets/PUMCH/PUMCH_ADM.json')
-    parser.add_argument('--dataset_path', default='./test.json')
+    parser.add_argument('--dataset_path', default='./datasets/PUMCH/PUMCH_ADM.json')
+    # parser.add_argument('--dataset_path', default='./test.json')
     parser.add_argument('--results_folder', default='./results/PUMCH')
     parser.add_argument('--model', type=str, default="gpt4", choices=["gpt4", "chatgpt", "glm4", "glm3_turbo", "gemini_pro", "mistral-7b", "chatglm3-6b", "llama2-7b", "llama2-13b", "llama2-70b"])
     parser.add_argument('--few_shot', type=str, default="none", choices=["none", "random", "dynamic"])

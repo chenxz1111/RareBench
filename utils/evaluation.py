@@ -14,6 +14,7 @@ def diagnosis_evaluate(predict_diagnosis, golden_diagnosis, handler):
     
     print("Begin evaluation.....")
     rank = handler.get_completion(system_prompt, prompt)
+    rank = rank.replace("\n", "")
     # if len(rank) > 1:
     #     return None
     return rank

@@ -5,6 +5,8 @@ llm_utils/gemini_key.txt
 datasets/*
 results/*
 mapping/phe2embedding.json
+process.py
+script.py
 
 
 # Byte-compiled / optimized / DLL files
