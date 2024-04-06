@@ -1,7 +1,8 @@
-from transformers import AutoTokenizer, AutoModel, AutoModelForCausalLM
+from transformers import AutoTokenizer, AutoModel, AutoModelForCausalLM, T5ForConditionalGeneration
 import json
 import time
 import torch
+from transformers.generation.utils import GenerationConfig
 
 class Local_llm_handler:
     def __init__(self, model_name):
@@ -19,6 +20,13 @@ class Local_llm_handler:
             self.model = AutoModelForCausalLM.from_pretrained(self.model_path)
             self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
             print(f"Using device: {self.device}")
+        elif self.model_name in ["huatuogpt2-7b"]:
+            self.tokenizer = AutoTokenizer.from_pretrained(self.model_path, use_fast=True, trust_remote_code=True)
+            self.model = AutoModelForCausalLM.from_pretrained(self.model_path, device_map="auto", trust_remote_code=True)
+            self.model.generation_config = GenerationConfig.from_pretrained(self.model_path)
+            
+        elif self.model_name in ["clinical-T5"]:
+            self.model = T5ForConditionalGeneration.from_pretrained(self.model_path, from_flax=True)
         self.model.eval()
 
     def get_completion(self, system_prompt, prompt, seed=42):
@@ -26,7 +34,7 @@ class Local_llm_handler:
             t = time.time()
             if self.model_name == "chatglm3-6b":
                 result, history = self.model.chat(self.tokenizer, system_prompt + prompt, history=[])
-            elif self.model_name in ["llama2-7b", "llama2-13b", "llama2-70b"]:
+            elif self.model_name in ["llama2-7b", "llama2-13b", "llama2-70b", "clinical-T5"]:
                 inputs = self.tokenizer(system_prompt + prompt, return_tensors="pt")
                 inputs = inputs.to(self.device)
                 self.model.to(self.device)
@@ -46,7 +54,12 @@ class Local_llm_handler:
                 result = result.replace(system_prompt + prompt, "")
                 result = result.replace("[INST]", "")
                 result = result.replace("[/INST]", "")
-
+            elif self.model_name in ["huatuogpt2-7b"]:
+                messages = []
+                messages.append({"role": "user", "content": f"{system_prompt} {prompt}"})
+                response = self.model.HuatuoChat(self.tokenizer, messages)
+                print(response)
+                quit()
             print(f'Local LLM {self.model_name} time: {time.time() - t}')
             return result
         # except Exception as e:
