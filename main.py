@@ -77,12 +77,18 @@ def generate_random_few_shot_id(exclude_id, total_num, k_shot=3):
             few_shot_id.append(id)
     return few_shot_id
 
-def generate_dynamic_few_shot_id(exclude_id, dataset, k_shot=3):
+def generate_dynamic_few_shot_id(methods, exclude_id, dataset, k_shot=3):
     few_shot_id = []
 
     patient = dataset.load_hpo_code_data()
-    phe2embedding = json.load(open("mapping/phe2embedding.json", "r", encoding="utf-8-sig"))
+    if methods == "dynamic":
+        phe2embedding = json.load(open("mapping/phe2embedding.json", "r", encoding="utf-8-sig"))
+    elif methods == "medprompt":
+        phe2embedding = json.load(open("mapping/medprompt_emb.json", "r", encoding="utf-8-sig"))
     ic_dict = json.load(open("mapping/ic_dict.json", "r", encoding="utf-8-sig"))
+    if methods == "medprompt":
+        ic_dict = {k: 1 for k, _ in ic_dict.items()}
+   
     exclude_patient = patient[exclude_id]
     exclude_patient_embedding = np.array([np.array(phe2embedding[phe]) for phe in exclude_patient[0] if phe in phe2embedding])
     exclude_patient_ic = np.array([ic_dict[phe] for phe in exclude_patient[0] if phe in phe2embedding])
@@ -111,6 +117,7 @@ def generate_dynamic_few_shot_id(exclude_id, dataset, k_shot=3):
 
 
 def run_task(task_type, dataset:RareDataset, handler, results_folder, few_shot, cot, eval=False):
+    few_shot_dict = {}
     rare_prompt = RarePrompt()
     if task_type == "diagnosis":
         patient_info_type = dataset.dataset_type
@@ -118,6 +125,7 @@ def run_task(task_type, dataset:RareDataset, handler, results_folder, few_shot, 
         print("Begin diagnosis.....")
         print("total patient: ", len(dataset.patient))
         ERR_CNT = 0
+        questions = []
         for i, patient in enumerate(dataset.patient):
             if handler is None:
                 print("handler is None")
@@ -130,15 +138,21 @@ def run_task(task_type, dataset:RareDataset, handler, results_folder, few_shot, 
             few_shot_info = []
             if few_shot == "random":
                 few_shot_id = generate_random_few_shot_id([i], len(dataset.patient))
+                
+                few_shot_dict[i] = few_shot_id
                 for id in few_shot_id:
                     few_shot_info.append((dataset.patient[id][0], dataset.patient[id][1]))
-            elif few_shot == "dynamic":
-                few_shot_id = generate_dynamic_few_shot_id(i, dataset)
+            elif few_shot == "dynamic" or few_shot == "medprompt":
+                few_shot_id = generate_dynamic_few_shot_id(few_shot, i, dataset)
                 # input()
+                # quit()
+                few_shot_dict[str(i)] = [str(idx) for idx in few_shot_id]
                 for id in few_shot_id:
                     few_shot_info.append((dataset.patient[id][0], dataset.patient[id][1]))
 
             system_prompt, prompt = rare_prompt.diagnosis_prompt(patient_info_type, patient_info, cot, few_shot_info)
+            questions.append(system_prompt + prompt)
+            
             predict_diagnosis = handler.get_completion(system_prompt, prompt)
             if predict_diagnosis is None:
                 print(f"patient {i} predict diagnosis is None")
@@ -161,6 +175,8 @@ def run_task(task_type, dataset:RareDataset, handler, results_folder, few_shot, 
         print("diagnosis ERR_CNT: ", ERR_CNT)
     elif task_type == "mdt":
         pass
+    # json.dump(questions, open(os.path.join("", "questions.json"), "w", encoding="utf-8-sig"), indent=4, ensure_ascii=False)
+    # json.dump(few_shot_dict, open(os.path.join("dynamic_few-shot", f"{dataset.dataset_name}.json"), "w", encoding="utf-8-sig"), indent=4, )
         
 
 
@@ -173,7 +189,7 @@ def main():
     # parser.add_argument('--dataset_path', default='./test.json')
     parser.add_argument('--results_folder', default='./results/PUMCH')
     parser.add_argument('--model', type=str, default="gpt4", choices=["gpt4", "chatgpt", "glm4", "glm3_turbo", "gemini_pro", "mistral-7b", "chatglm3-6b", "llama2-7b", "llama2-13b", "llama2-70b"])
-    parser.add_argument('--few_shot', type=str, default="none", choices=["none", "random", "dynamic"])
+    parser.add_argument('--few_shot', type=str, default="none", choices=["none", "random", "dynamic", "medprompt", "auto-cot"])
     parser.add_argument('--cot', type=str, default="none", choices=["none", "zero-shot"])
     parser.add_argument('--eval', action='store_true')
 
@@ -199,6 +215,10 @@ def main():
         few_shot = "_few_shot"
     elif args.few_shot == "dynamic":
         few_shot = "_dynamic_few_shot"
+    elif args.few_shot == "medprompt":
+        few_shot = "_medprompt"
+    elif args.few_shot == "auto-cot":
+        few_shot = "_auto-cot"
     if args.cot == "none":
         cot = ""
     elif args.cot == "zero-shot":

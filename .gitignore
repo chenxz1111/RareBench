@@ -5,6 +5,7 @@ llm_utils/gemini_key.txt
 datasets/*
 results/*
 mapping/phe2embedding.json
+mapping/mapping/phe2embedding.json
 process.py
 script.py
 
