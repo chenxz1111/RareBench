@@ -152,6 +152,10 @@ def run_task(task_type, dataset:RareDataset, handler, results_folder, few_shot, 
 
             system_prompt, prompt = rare_prompt.diagnosis_prompt(patient_info_type, patient_info, cot, few_shot_info)
             questions.append(system_prompt + prompt)
+            if few_shot == "auto-cot":
+                autocot_example = json.load(open("mapping/autocot_example.json", "r", encoding="utf-8-sig"))
+                system_prompt = system_prompt + autocot_example[handler.model_name]
+                prompt = prompt + "Let us think step by step.\n"
             
             predict_diagnosis = handler.get_completion(system_prompt, prompt)
             if predict_diagnosis is None:

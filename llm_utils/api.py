@@ -101,6 +101,7 @@ class Zhipuai_api_handler:
             self.model = "glm-4"
         elif model == 'glm3_turbo':
             self.model = "glm-3-turbo"
+        self.model_name = model
 
     def get_completion(self, system_prompt, prompt, seed=42):
         try:
