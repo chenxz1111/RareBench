@@ -130,7 +130,7 @@ class Gemini_api_handler:
         with open('llm_utils/gemini_key.txt', 'r') as f:
             genai.configure(api_key=f.readline().strip(), transport='rest')  
         if model == 'gemini_pro':
-            self.model_name = "gemini-pro"
+            self.model_name = "gemini_pro"
             self.model = genai.GenerativeModel('gemini-pro')
 
     def get_completion(self, system_prompt, prompt, seed=42):

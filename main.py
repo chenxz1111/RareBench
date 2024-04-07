@@ -59,6 +59,9 @@ def diagnosis_metric_calculate(folder):
                 raise Exception("predict_rank error")
             predict_rank = predict_rank[0]
             recall_top_k.append(int(predict_rank))
+        if len(predict_rank) != 1 and predict_rank != "10":
+            print(file)
+            input()
         
     metric['recall_top_1'] = len([i for i in recall_top_k if i <= 1]) / len(recall_top_k)
     metric['recall_top_3'] = len([i for i in recall_top_k if i <= 3]) / len(recall_top_k)
@@ -144,6 +147,7 @@ def run_task(task_type, dataset:RareDataset, handler, results_folder, few_shot, 
                     few_shot_info.append((dataset.patient[id][0], dataset.patient[id][1]))
             elif few_shot == "dynamic" or few_shot == "medprompt":
                 few_shot_id = generate_dynamic_few_shot_id(few_shot, i, dataset)
+                # print(few_shot_id)
                 # input()
                 # quit()
                 few_shot_dict[str(i)] = [str(idx) for idx in few_shot_id]
@@ -151,10 +155,12 @@ def run_task(task_type, dataset:RareDataset, handler, results_folder, few_shot, 
                     few_shot_info.append((dataset.patient[id][0], dataset.patient[id][1]))
 
             system_prompt, prompt = rare_prompt.diagnosis_prompt(patient_info_type, patient_info, cot, few_shot_info)
+            # print(system_prompt + prompt)
+            # quit()
             questions.append(system_prompt + prompt)
             if few_shot == "auto-cot":
                 autocot_example = json.load(open("mapping/autocot_example.json", "r", encoding="utf-8-sig"))
-                system_prompt = system_prompt + autocot_example[handler.model_name]
+                system_prompt = "Here a some examples: " + autocot_example[handler.model_name] + system_prompt
                 prompt = prompt + "Let us think step by step.\n"
             
             predict_diagnosis = handler.get_completion(system_prompt, prompt)
