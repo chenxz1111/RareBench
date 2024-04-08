@@ -1,5 +1,6 @@
 import json
 from llm_utils.api import Openai_api_handler, Zhipuai_api_handler, Gemini_api_handler
+from llm_utils.local_llm import Local_llm_handler
 
 f_name = "mapping/example.json"
 
@@ -10,8 +11,11 @@ prompt_example = json.load(open("mapping/autocot_example.json", "r", encoding="u
 # model = "gemini_pro"
 # api_handler = Gemini_api_handler(model)
 
-model = "glm3_turbo"
-api_handler = Zhipuai_api_handler(model)
+# model = "glm3_turbo"
+# api_handler = Zhipuai_api_handler(model)
+
+model = 'mistral-7b'
+api_handler = Local_llm_handler(model)
 
 p = ''
 
