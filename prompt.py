@@ -3,7 +3,7 @@ from typing import List, Optional, Tuple
 
 class RarePrompt:
     def __init__(self) -> None:
-        self.system_prompt = "You are an expert in the field of rare disease."
+        self.system_prompt = "You are a specialist in the field of rare diseases."
         self.diagnosis_system_prompt = self.system_prompt + \
                                     " You will be provided and asked about a complicated clinical case; read it carefully and then provide a diverse and comprehensive differential diagnosis."
         

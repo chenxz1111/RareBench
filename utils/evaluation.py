@@ -6,16 +6,14 @@ def diagnosis_evaluate(predict_diagnosis, golden_diagnosis, handler):
         
     predict_diagnosis = predict_diagnosis.replace("\n\n\n", "")
 
-    system_prompt = "You are a classifier."
-    prompt = "我现在会给你十种预测疾病，如果预测诊断在标准诊断中。请输出预测的位次，否则输出“否”，只输出“否”或“1-10”的数字，不要输出额外的内容。"
-    prompt += f'预测诊断：{predict_diagnosis}\n'
-    prompt += f'标准诊断：{golden_diagnosis}\n'
-    
+    system_prompt = "You are a specialist in the field of rare diseases."
+    prompt = 'I will now give you ten predicted diseases if the predicted diagnosis is in the standard diagnosis. Please output the predicted rank, otherwise output "No", only output "No" or "1-10" numbers, if the predicted disease has multiple conditions, only output the top rank. Output only "No" or one number, no additional output.'
+    prompt += f'Predicted diseases: {predict_diagnosis}\n'
+    prompt += f'Standard diagnosis: {golden_diagnosis}\n'
     
     print("Begin evaluation.....")
     rank = handler.get_completion(system_prompt, prompt)
     rank = rank.replace("\n", "")
-    # if len(rank) > 1:
-    #     return None
+    
     return rank
     

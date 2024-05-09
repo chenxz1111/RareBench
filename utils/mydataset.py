@@ -1,25 +1,36 @@
 import json
+from datasets import load_dataset
+
 
 class RareDataset():
     def __init__(self, dataset_name, dataset_path, dataset_type) -> None:
         self.dataset_name = dataset_name
         self.dataset_path = dataset_path
         self.dataset_type = dataset_type
-        if dataset_type == "EHR" or dataset_type == "PHENOTYPE":
+        if dataset_path is None:
+            if dataset_name in ["RAMEDIS", "MME", "HMS", "LIRICAL", "PUMCH_ADM"]:
+                self.data = load_dataset('chenxz/RareBench', dataset_name, split='test')
+            else:
+                raise ERROR("Dataset not found")
+        else:
+            with open(dataset_path, "r", encoding="utf-8-sig") as f:
+                self.data = json.load(f)
+        if self.dataset_type == "PHENOTYPE":
             self.patient = self.load_ehr_phenotype_data()
-        elif dataset_type == "MDT":
-            self.patient = self.load_mdt_data()
 
     def load_ehr_phenotype_data(self):
         phenotype_mapping = json.load(open("mapping/phenotype_mapping.json", "r", encoding="utf-8-sig"))
         disease_mapping = json.load(open("mapping/disease_mapping.json", "r", encoding="utf-8-sig"))
 
         patient = []
-        with open(self.dataset_path, "r", encoding="utf-8-sig") as f:
-            data = json.load(f)
-        for p in data:
-            phenotype_list = p[0]
-            disease_list = p[1]
+       
+        for p in self.data:
+            if self.dataset_path is None:
+                phenotype_list = p['Phenotype']
+                disease_list = p['RareDisease']
+            else:
+                phenotype_list = p[0]
+                disease_list = p[1]
             if self.dataset_type == "PHENOTYPE":
                 phenotype_list = [phenotype_mapping[phenotype] for phenotype in phenotype_list if phenotype in phenotype_mapping]
                 disease_list = [disease_mapping[disease] for disease in disease_list if disease in disease_mapping]
@@ -28,30 +39,4 @@ class RareDataset():
             patient.append((phenotype, disease))
             
             
-        return patient
-    
-    def load_hpo_code_data(self):
-        disease_mapping = json.load(open("mapping/disease_mapping.json", "r", encoding="utf-8-sig"))
-        patient = []
-        
-        with open(self.dataset_path, "r") as f:
-            data = json.load(f)
-        for p in data:
-            phenotype_list = p[0]
-            disease_list = p[1]
-            disease_list = [disease_mapping[disease] for disease in disease_list if disease in disease_mapping]
-            disease = ",".join(disease_list)
-            patient.append((phenotype_list, disease))
-        return patient
-
-    def load_mdt_data(self):
-        patient = []
-        with open(self.dataset_path, "r", encoding="utf-8-sig") as f:
-            data = json.load(f)
-        for k, v in data.items():
-            ehr_info = v['二、病例介绍']
-            ehr_info = "".join(ehr_info)
-            golden_diagnosis = v['golden_diagnosis']
-            
-            patient.append((ehr_info, golden_diagnosis))
         return patient
