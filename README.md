@@ -8,7 +8,7 @@
 Meanwhile, we have compiled the largest open-source dataset on rare disease patients, establishing a benchmark for future studies in this domain. To facilitate differential diagnosis of rare diseases, we develop a dynamic few-shot prompt methodology, leveraging a comprehensive rare disease knowledge graph synthesized from multiple knowledge bases, significantly enhancing LLMs’ diagnos-
 tic performance. Moreover, we present an exhaustive comparative study of GPT-4’s diagnostic capabilities against those of specialist physicians. Our experimental findings underscore the promising potential of integrating LLMs into the clinical diagnostic process for rare diseases. 
 
-## ⚙️ How to evaluate on LongBench
+## ⚙️ How to evaluate on RareBench
 
 #### Load Data
 
@@ -42,10 +42,11 @@ Replace the content in the mapping/local_llm_path.json file with the path to the
 
 ## 📝 Citation
 ```
-@article{chen2024rarebench,
+@inproceedings{chen2024rarebench,
   title={RareBench: Can LLMs Serve as Rare Diseases Specialists?},
   author={Chen, Xuanzhong and Mao, Xiaohao and Guo, Qihan and Wang, Lun and Zhang, Shuyang and Chen, Ting},
-  journal={arXiv preprint arXiv:2402.06341},
+  booktitle={Proceedings of the 30th ACM SIGKDD Conference on Knowledge Discovery and Data Mining},
+  pages={4850--4861},
   year={2024}
 }
 ```
